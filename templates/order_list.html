@@ -6,7 +6,7 @@
 <section class="page-intro">
     <div class="container">
         <h1>Список заказа</h1>
-        <p>Соберите товары и отправьте список нам в WhatsApp. Мы подтвердим наличие, цену и доставку.</p>
+        <p>Соберите товары и оформите заявку на сайте или отправьте список в WhatsApp. Мы подтвердим наличие, цену и доставку.</p>
     </div>
 </section>
 
@@ -44,11 +44,33 @@
             {% if total %}
                 <p class="order-total">Ориентировочная сумма: <strong>{{ total|floatformat:"-2" }} сом</strong><br><small>Оптовая цена применяется от минимального количества, указанного у товара. Итоговую цену подтверждает продавец.</small></p>
             {% endif %}
-            {% if seller_whatsapp_url %}
-                <a class="button button-primary" href="{{ seller_whatsapp_url }}?text={{ wa_text|urlencode }}" target="_blank" rel="noopener noreferrer">Отправить заказ в WhatsApp</a>
-            {% else %}
-                <p>Контакт продавца пока не настроен.</p>
-            {% endif %}
+            <div class="checkout">
+                <form class="checkout-form" method="post" action="{% url 'checkout' %}" novalidate>
+                    {% csrf_token %}
+                    <h2>Оформить заявку</h2>
+                    <p class="checkout-hint">Оставьте контакты — менеджер перезвонит, подтвердит наличие и цену.</p>
+                    {% for field in form.visible_fields %}
+                        {% if field.name == 'website' %}
+                            {{ field }}
+                        {% else %}
+                            <label class="checkout-field">
+                                <span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>
+                                {{ field }}
+                                {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                            </label>
+                        {% endif %}
+                    {% endfor %}
+                    <button class="button button-primary" type="submit">Отправить заявку</button>
+                </form>
+                <div class="checkout-alt">
+                    <p>Или отправьте список сами:</p>
+                    {% if seller_whatsapp_url %}
+                        <a class="button button-secondary" href="{{ seller_whatsapp_url }}?text={{ wa_text|urlencode }}" target="_blank" rel="noopener noreferrer">Отправить заказ в WhatsApp</a>
+                    {% else %}
+                        <p>Контакт продавца пока не настроен.</p>
+                    {% endif %}
+                </div>
+            </div>
         {% else %}
             <div class="empty-state">
                 <h2>Список заказа пуст</h2>

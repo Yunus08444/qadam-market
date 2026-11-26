@@ -38,6 +38,10 @@ SELLER_ADDRESS = os.environ.get('QADAM_SELLER_ADDRESS', '').strip()
 SELLER_HOURS = os.environ.get('QADAM_SELLER_HOURS', '').strip()
 SELLER_INSTAGRAM = os.environ.get('QADAM_SELLER_INSTAGRAM', '').strip()
 
+# Telegram bot that notifies the manager about new orders
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
+TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '').strip()
+
 
 # Application definition
 
@@ -50,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
     'products',
+    'orders',
 ]
 
 MIDDLEWARE = [

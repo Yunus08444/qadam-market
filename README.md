@@ -13,7 +13,10 @@ Built for a real family business, still in active development.
 - Product catalog with search by name or article, category and in-stock filters, sorting and pagination
 - Product page with photo gallery, sizes, color and a link to a video review (Instagram Reels)
 - Retail and wholesale prices — the wholesale price applies automatically from a minimum quantity
-- Order list stored in the session; the finished order is sent to WhatsApp as ready-made text
+- Order list stored in the session; checkout saves the order to the database (or sends it to WhatsApp)
+- Order workflow with statuses (new → confirmed → shipped → completed / cancelled) managed from the admin
+- Instant Telegram notification to the manager about every new order
+- Prices are copied into the order, so later price changes do not affect placed orders
 - CSV import of products via a management command (creates categories, updates existing items by article)
 - Admin panel with inline photo upload and inline editing of prices and stock
 - SEO basics: `sitemap.xml`, `robots.txt`, custom 404/500 pages
@@ -68,6 +71,15 @@ Fill in `products_template.csv` (`;` or `,` separated) and run:
 python manage.py import_products products_template.csv
 ```
 
+### Telegram notifications
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy its token.
+2. Send any message to the bot (or add it to the managers group) and get the chat id from
+   `https://api.telegram.org/bot<token>/getUpdates`.
+3. Put `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` into `.env`.
+
+Without these variables orders are still saved, only the notification is skipped.
+
 ### Running tests
 
 ```bash
@@ -82,10 +94,15 @@ coverage run manage.py test && coverage report
 qadam/                  project settings and URLs
 products/
     models.py           Category, Product, ProductImage
-    views.py            catalog, product page, order list
+    views.py            catalog and product page
     context_processors.py   shop contacts and order counter for all templates
     management/commands/import_products.py
     tests.py
+orders/
+    models.py           Order, OrderItem, status transitions
+    cart.py             order list stored in the session
+    services.py         creating an order in a transaction
+    notifications.py    Telegram notifications
 templates/              HTML templates
 static/css/             styles
 ```
@@ -94,8 +111,8 @@ static/css/             styles
 
 - [x] PostgreSQL and Docker Compose
 - [x] CI with GitHub Actions (tests + linter)
-- [ ] Orders saved in the database with statuses
-- [ ] Telegram notifications for new orders
+- [x] Orders saved in the database with statuses
+- [x] Telegram notifications for new orders
 - [ ] REST API (Django REST Framework) with OpenAPI docs
 - [ ] Accounts for wholesale customers with order history
 - [ ] Background tasks with Celery + Redis (notifications, image thumbnails)

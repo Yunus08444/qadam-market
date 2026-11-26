@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Заказ №{{ order.number }} принят — Qadam Market{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <div class="container">
+        <h1>Заказ №{{ order.number }} принят</h1>
+        <p>Спасибо, {{ order.customer_name }}! Менеджер позвонит на номер {{ order.phone }}, подтвердит наличие, цену и доставку.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="order-wrap">
+            <table class="order-table">
+                <thead><tr><th>Товар</th><th>Цена за шт.</th><th>Количество</th><th>Сумма</th></tr></thead>
+                <tbody>
+                {% for item in order.items.all %}
+                    <tr>
+                        <td>{{ item.product_name }}<br><small>Артикул: {{ item.article }}</small></td>
+                        <td>{% if item.unit_price != None %}{{ item.unit_price|floatformat:"-2" }} сом{% else %}Уточняйте{% endif %}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{% if item.line_total != None %}{{ item.line_total|floatformat:"-2" }} сом{% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if order.total %}
+            <p class="order-total">Ориентировочная сумма: <strong>{{ order.total|floatformat:"-2" }} сом</strong></p>
+        {% endif %}
+        <p>
+            {% if seller_whatsapp_url %}
+                <a class="button button-secondary" href="{{ seller_whatsapp_url }}?text={{ wa_text|urlencode }}" target="_blank" rel="noopener noreferrer">Написать в WhatsApp</a>
+            {% endif %}
+            <a class="button button-primary" href="{% url 'catalog' %}">Вернуться в каталог</a>
+        </p>
+    </div>
+</section>
+{% endblock %}
