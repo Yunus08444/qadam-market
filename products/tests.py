@@ -198,13 +198,17 @@ class CatalogViewsTests(TestCase):
 
     def test_order_list_flow_and_wholesale_pricing(self):
         Product.objects.filter(pk=self.product.pk).update(wholesale_min_qty=10)
-        self.client.post(reverse('order_add', args=[self.product.pk]), {'qty': '12'})
+        self.client.post(
+            reverse('order_add', args=[self.product.pk]), {'qty': '12', 'size': '42'}
+        )
 
         response = self.client.get(reverse('order_list'))
         self.assertContains(response, 'Рабочие ботинки')
         self.assertEqual(response.context['total'], Decimal('12000.00'))
 
-        self.client.post(reverse('order_set', args=[self.product.pk]), {'qty': '0'})
+        self.client.post(
+            reverse('order_set', args=[self.product.pk]), {'qty': '0', 'size': '42'}
+        )
         self.assertEqual(self.client.get(reverse('order_list')).context['items'], [])
 
     def test_info_pages_sitemap_and_robots(self):

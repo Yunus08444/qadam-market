@@ -19,11 +19,12 @@
                     <tbody>
                     {% for it in items %}
                         <tr>
-                            <td><a href="{% url 'product_detail' it.product.pk %}">{{ it.product.name }}</a><br><small>Артикул: {{ it.product.article }}</small></td>
+                            <td><a href="{% url 'product_detail' it.product.pk %}">{{ it.product.name }}</a><br><small>Артикул: {{ it.product.article }}{% if it.size %} · Размер: <strong>{{ it.size }}</strong>{% endif %}</small></td>
                             <td>{% if it.unit != None %}{{ it.unit|floatformat:"-2" }} сом{% else %}Уточняйте{% endif %}</td>
                             <td>
                                 <form class="order-form" method="post" action="{% url 'order_set' it.product.pk %}">
                                     {% csrf_token %}
+                                    <input type="hidden" name="size" value="{{ it.size }}">
                                     <input type="number" name="qty" value="{{ it.qty }}" min="0" max="9999" aria-label="Количество">
                                     <button class="button button-secondary" type="submit">Обновить</button>
                                 </form>
@@ -32,6 +33,7 @@
                             <td>
                                 <form method="post" action="{% url 'order_set' it.product.pk %}">
                                     {% csrf_token %}
+                                    <input type="hidden" name="size" value="{{ it.size }}">
                                     <input type="hidden" name="qty" value="0">
                                     <button class="button button-secondary" type="submit">Убрать</button>
                                 </form>
@@ -49,17 +51,18 @@
                     {% csrf_token %}
                     <h2>Оформить заявку</h2>
                     <p class="checkout-hint">Оставьте контакты — менеджер перезвонит, подтвердит наличие и цену.</p>
-                    {% for field in form.visible_fields %}
-                        {% if field.name == 'website' %}
-                            {{ field }}
-                        {% else %}
-                            <label class="checkout-field">
-                                <span>{{ field.label }}{% if field.field.required %} *{% endif %}</span>
-                                {{ field }}
-                                {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
-                            </label>
-                        {% endif %}
-                    {% endfor %}
+                    {% include "orders/_field.html" with field=form.customer_name %}
+                    <div class="checkout-row">
+                        {% include "orders/_field.html" with field=form.phone %}
+                        {% include "orders/_field.html" with field=form.extra_phone %}
+                    </div>
+                    {% include "orders/_field.html" with field=form.region %}
+                    <div class="checkout-row">
+                        {% include "orders/_field.html" with field=form.locality %}
+                        {% include "orders/_field.html" with field=form.address %}
+                    </div>
+                    {% include "orders/_field.html" with field=form.comment %}
+                    {{ form.website }}
                     <button class="button button-primary" type="submit">Отправить заявку</button>
                 </form>
                 <div class="checkout-alt">

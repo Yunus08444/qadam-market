@@ -27,9 +27,15 @@
                 {% if product.stock %}В наличии{% else %}Нет в наличии{% endif %}
             </span>
         </div>
-        <form class="card-order" method="post" action="{% url 'order_add' product.pk %}">
-            {% csrf_token %}
-            <button class="button button-secondary" type="submit">В список заказа</button>
-        </form>
+        {% if product.size_options %}
+            <div class="card-order">
+                <a class="button button-secondary" href="{% url 'product_detail' product.pk %}">Выбрать размер</a>
+            </div>
+        {% else %}
+            <form class="card-order" method="post" action="{% url 'order_add' product.pk %}">
+                {% csrf_token %}
+                <button class="button button-secondary" type="submit">В список заказа</button>
+            </form>
+        {% endif %}
     </div>
 </article>

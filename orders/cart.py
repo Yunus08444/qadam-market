@@ -1,11 +1,25 @@
-"""Order list ("cart") stored in the session as {product_id: quantity}."""
+"""Order list ("cart") stored in the session.
 
+The session holds {key: quantity}, where key is "<product_id>" or
+"<product_id>:<size>" — the same boots in sizes 41 and 43 are two lines.
+"""
+
+from collections import defaultdict
 from decimal import Decimal
 
 from products.models import Product
 
 SESSION_KEY = 'order_list'
 MAX_QTY = 9999
+
+
+def make_key(product_id, size=''):
+    return f'{product_id}:{size}' if size else str(product_id)
+
+
+def parse_key(key):
+    product_id, _, size = key.partition(':')
+    return (int(product_id), size) if product_id.isdigit() else (None, '')
 
 
 def get_cart(session):
@@ -20,32 +34,41 @@ def clear_cart(session):
     session.pop(SESSION_KEY, None)
 
 
-def unit_price(product, qty):
-    """Retail price, or wholesale price when the quantity reaches the minimum."""
-    if (
-        product.wholesale_price is not None
-        and product.wholesale_min_qty
-        and qty >= product.wholesale_min_qty
-    ):
-        return product.wholesale_price
-    return product.price
-
-
 def get_items(session):
     """Return (items, total) for the products that are still available."""
-    cart = get_cart(session)
+    lines = []
+    for key, qty in get_cart(session).items():
+        product_id, size = parse_key(key)
+        if product_id is not None:
+            lines.append((key, product_id, size, qty))
+
     products = Product.objects.filter(
-        pk__in=[int(key) for key in cart if key.isdigit()],
+        pk__in={product_id for _, product_id, _, _ in lines},
         is_active=True,
         category__is_active=True,
-    ).order_by('name')
+    ).in_bulk()
+
+    # Wholesale price depends on the total quantity of a product across all sizes
+    qty_per_product = defaultdict(int)
+    for _, product_id, _, qty in lines:
+        qty_per_product[product_id] += qty
 
     items, total = [], Decimal('0')
-    for product in products:
-        qty = cart[str(product.pk)]
-        unit = unit_price(product, qty)
+    for key, product_id, size, qty in lines:
+        product = products.get(product_id)
+        if product is None:
+            continue
+        unit = product.price_for(qty_per_product[product_id])
         line = unit * qty if unit is not None else None
         if line is not None:
             total += line
-        items.append({'product': product, 'qty': qty, 'unit': unit, 'line': line})
+        items.append({
+            'key': key,
+            'product': product,
+            'size': size,
+            'qty': qty,
+            'unit': unit,
+            'line': line,
+        })
+    items.sort(key=lambda item: (item['product'].name, item['size']))
     return items, total

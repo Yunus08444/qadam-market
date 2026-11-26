@@ -36,6 +36,11 @@
     </header>
 
     <main>
+        {% if messages %}
+            <div class="container flash-messages">
+                {% for message in messages %}<p class="flash flash-{{ message.tags }}" role="alert">{{ message }}</p>{% endfor %}
+            </div>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 

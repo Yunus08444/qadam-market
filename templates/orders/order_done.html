@@ -7,6 +7,7 @@
     <div class="container">
         <h1>Заказ №{{ order.number }} принят</h1>
         <p>Спасибо, {{ order.customer_name }}! Менеджер позвонит на номер {{ order.phone }}, подтвердит наличие, цену и доставку.</p>
+        <p>{% if order.is_delivery %}Доставка: {% endif %}{{ order.full_address }}</p>
     </div>
 </section>
 
@@ -18,7 +19,7 @@
                 <tbody>
                 {% for item in order.items.all %}
                     <tr>
-                        <td>{{ item.product_name }}<br><small>Артикул: {{ item.article }}</small></td>
+                        <td>{{ item.product_name }}<br><small>Артикул: {{ item.article }}{% if item.size %} · Размер: <strong>{{ item.size }}</strong>{% endif %}</small></td>
                         <td>{% if item.unit_price != None %}{{ item.unit_price|floatformat:"-2" }} сом{% else %}Уточняйте{% endif %}</td>
                         <td>{{ item.quantity }}</td>
                         <td>{% if item.line_total != None %}{{ item.line_total|floatformat:"-2" }} сом{% endif %}</td>

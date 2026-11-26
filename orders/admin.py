@@ -5,13 +5,10 @@ from .models import Order, OrderItem
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
-    extra = 0
-    can_delete = False
-    fields = ('product_name', 'article', 'unit_price', 'quantity', 'line_total')
-    readonly_fields = fields
-
-    def has_add_permission(self, request, obj=None):
-        return False
+    extra = 1
+    autocomplete_fields = ('product',)
+    fields = ('product', 'product_name', 'article', 'size', 'quantity', 'unit_price', 'line_total')
+    readonly_fields = ('line_total',)
 
 
 def _status_action(status):
@@ -43,19 +40,31 @@ def _status_action(status):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = [OrderItemInline]
-    list_display = ('__str__', 'customer_name', 'phone', 'status', 'total', 'created_at')
-    list_filter = ('status', 'created_at')
-    search_fields = ('customer_name', 'phone', 'items__article', 'items__product_name')
+    list_display = (
+        '__str__', 'phone', 'region', 'locality', 'status', 'total', 'deposit',
+        'amount_due_display', 'source', 'created_at',
+    )
+    list_filter = ('status', 'source', 'region', 'created_at')
+    search_fields = (
+        'customer_name', 'phone', 'extra_phone', 'locality', 'address',
+        'items__article', 'items__product_name',
+    )
     date_hierarchy = 'created_at'
     list_per_page = 50
     # Status changes only through actions, so the allowed transitions are always respected
-    readonly_fields = ('status', 'total', 'public_id', 'created_at', 'updated_at')
-    fields = (
-        ('customer_name', 'phone'),
-        'comment',
-        ('status', 'total'),
-        ('created_at', 'updated_at'),
-        'public_id',
+    readonly_fields = (
+        'status', 'total', 'amount_due_display', 'public_id', 'created_at', 'updated_at',
+    )
+    fieldsets = (
+        ('Клиент', {'fields': (('customer_name', 'source'), ('phone', 'extra_phone'))}),
+        ('Доставка', {'fields': ('region', ('locality', 'address'), 'comment')}),
+        ('Оплата и статус', {
+            'fields': (('total', 'deposit', 'amount_due_display'), 'status'),
+        }),
+        ('Служебное', {
+            'classes': ('collapse',),
+            'fields': (('created_at', 'updated_at'), 'public_id'),
+        }),
     )
     actions = [
         _status_action(Order.Status.CONFIRMED),
@@ -64,6 +73,14 @@ class OrderAdmin(admin.ModelAdmin):
         _status_action(Order.Status.CANCELLED),
     ]
 
-    def has_add_permission(self, request):
-        # Orders come from the website, not from the admin
-        return False
+    def get_changeform_initial_data(self, request):
+        # Orders added by hand usually come from the WhatsApp group
+        return {'source': Order.Source.WHATSAPP, **super().get_changeform_initial_data(request)}
+
+    @admin.display(description='Остаток к оплате')
+    def amount_due_display(self, obj):
+        return obj.amount_due if obj.pk else '—'
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.recalculate_total()
