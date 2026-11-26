@@ -1,8 +1,10 @@
-
+import re
 from datetime import timedelta
 
 from django.db import models
 from django.utils import timezone
+
+SIZE_RANGE_RE = re.compile(r'^(\d{1,3})\s*[-–—]\s*(\d{1,3})$')
 
 
 class Category(models.Model):
@@ -78,6 +80,27 @@ class Product(models.Model):
     @property
     def is_new(self):
         return timezone.now() - self.created_at < timedelta(days=14)
+
+    def price_for(self, qty):
+        """Retail price, or wholesale price when the quantity reaches the minimum."""
+        if (
+            self.wholesale_price is not None
+            and self.wholesale_min_qty
+            and qty >= self.wholesale_min_qty
+        ):
+            return self.wholesale_price
+        return self.price
+
+    @property
+    def size_options(self):
+        """Sizes a customer can pick: '39-44' -> ['39', ..., '44'], 'S, M, L' -> ['S', 'M', 'L']."""
+        value = self.sizes.strip()
+        match = SIZE_RANGE_RE.match(value)
+        if match:
+            start, end = int(match[1]), int(match[2])
+            if start <= end and end - start <= 30:
+                return [str(size) for size in range(start, end + 1)]
+        return [size for size in re.split(r'[,;/\s]+', value) if size]
 
 
 class ProductImage(models.Model):
