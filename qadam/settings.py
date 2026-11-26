@@ -6,6 +6,7 @@ a `.env` file — see `.env.example`.
 """
 
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -14,6 +15,8 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / '.env')
+
+TESTING = 'test' in sys.argv
 
 
 # Quick-start development settings - unsuitable for production
@@ -53,8 +56,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'django_filters',
+    'drf_spectacular',
     'products',
     'orders',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -103,6 +111,10 @@ DATABASES = {
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
+
+# Fast password hashing in tests only
+if TESTING:
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -176,4 +188,36 @@ MAILERS = {
             else 'django.core.mail.backends.smtp.EmailBackend',
         ),
     },
+}
+
+# REST API
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_THROTTLE_RATES': {
+        # Placing orders without an account: limit spam from one IP
+        'order_create': os.environ.get('API_ORDER_THROTTLE', '20/hour'),
+    },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Qadam Market API',
+    'DESCRIPTION': (
+        'Catalog and orders API of the Qadam Market wholesale shop. '
+        'Public endpoints need no authentication; manager endpoints need a token '
+        '(header `Authorization: Token <key>`) of a staff user.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
