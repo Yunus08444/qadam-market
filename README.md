@@ -29,7 +29,8 @@ Built for a real family business, still in active development.
 
 - **Backend:** Python 3.12+, Django 6, PostgreSQL (SQLite for quick local runs)
 - **Infrastructure:** Docker, docker-compose, gunicorn, WhiteNoise
-- **Quality:** Django test suite (~95% coverage), ruff, GitHub Actions CI
+- **API:** Django REST Framework, django-filter, drf-spectacular (OpenAPI / Swagger)
+- **Quality:** 63 tests (~98% coverage), ruff, GitHub Actions CI
 - **Frontend:** server-rendered Django templates, plain CSS
 
 ## Getting started
@@ -91,6 +92,39 @@ ruff check .
 coverage run manage.py test && coverage report
 ```
 
+## REST API
+
+Interactive docs: **`/api/docs/`** (Swagger UI), schema: `/api/schema/`.
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/api/v1/categories/` | public | active categories with product counts |
+| GET | `/api/v1/products/` | public | catalog: `?search=`, `?category=`, `?in_stock=`, `?min_price=`, `?ordering=price` |
+| GET | `/api/v1/products/{id}/` | public | product with sizes and photos |
+| POST | `/api/v1/orders/` | public, rate limited | place an order |
+| GET | `/api/v1/orders/{public_id}/` | public | order status (no personal data) |
+| POST | `/api/v1/auth/token/` | — | get a token by username and password |
+| GET | `/api/v1/manager/orders/` | staff token | all orders: `?status=`, `?source=`, `?search=` |
+| POST | `/api/v1/manager/orders/{id}/status/` | staff token | move the order to the next status |
+
+Placing an order:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/orders/   -H "Content-Type: application/json"   -d '{
+    "customer_name": "Azamat",
+    "phone": "+996 555 12 34 56",
+    "region": "batken",
+    "locality": "Kyzyl-Kiya",
+    "items": [
+      {"product": 1, "size": "41", "quantity": 6},
+      {"product": 1, "size": "43", "quantity": 4}
+    ]
+  }'
+```
+
+Prices are always calculated on the server with the same code as the website
+(wholesale price from the total quantity of a product across sizes).
+
 ## Project structure
 
 ```
@@ -106,6 +140,9 @@ orders/
     cart.py             order list stored in the session
     services.py         creating an order in a transaction
     notifications.py    Telegram notifications
+api/
+    serializers.py      validation and output of catalog and orders
+    views.py            viewsets, filters, permissions, throttling
 templates/              HTML templates
 static/css/             styles
 ```
@@ -116,7 +153,7 @@ static/css/             styles
 - [x] CI with GitHub Actions (tests + linter)
 - [x] Orders saved in the database with statuses
 - [x] Telegram notifications for new orders
-- [ ] REST API (Django REST Framework) with OpenAPI docs
+- [x] REST API (Django REST Framework) with OpenAPI docs
 - [ ] Accounts for wholesale customers with order history
 - [ ] Background tasks with Celery + Redis (notifications, image thumbnails)
 - [ ] Deployment with HTTPS
