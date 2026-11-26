@@ -5,8 +5,8 @@ is read from environment variables. For local development put them into
 a `.env` file — see `.env.example`.
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 import dj_database_url
 from dotenv import load_dotenv

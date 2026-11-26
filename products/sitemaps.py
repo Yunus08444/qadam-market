@@ -14,7 +14,7 @@ class StaticSitemap(Sitemap):
 
 class ProductSitemap(Sitemap):
     def items(self):
-        return Product.objects.filter(is_active=True, category__is_active=True)
+        return Product.objects.filter(is_active=True, category__is_active=True).order_by('pk')
 
     def location(self, obj):
         return reverse('product_detail', args=[obj.pk])

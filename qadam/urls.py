@@ -1,15 +1,21 @@
-from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
 from django.urls import path
 from django.views.generic import TemplateView
-from django.contrib.sitemaps.views import sitemap
 
 from products.sitemaps import ProductSitemap, StaticSitemap
 from products.views import (
-    catalog, home, order_add, order_list, order_set, product_detail,
+    catalog,
+    home,
+    order_add,
+    order_list,
+    order_set,
+    product_detail,
 )
 
+SITEMAPS = {'static': StaticSitemap, 'products': ProductSitemap}
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -22,8 +28,12 @@ urlpatterns = [
     path('about/', TemplateView.as_view(template_name='about.html'), name='about'),
     path('wholesale/', TemplateView.as_view(template_name='wholesale.html'), name='wholesale'),
     path('delivery/', TemplateView.as_view(template_name='delivery.html'), name='delivery'),
-    path('sitemap.xml', sitemap, {'sitemaps': {'static': StaticSitemap, 'products': ProductSitemap}}, name='sitemap'),
-    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots'),
+    path('sitemap.xml', sitemap, {'sitemaps': SITEMAPS}, name='sitemap'),
+    path(
+        'robots.txt',
+        TemplateView.as_view(template_name='robots.txt', content_type='text/plain'),
+        name='robots',
+    ),
 ]
 
 if settings.DEBUG:
