@@ -15,6 +15,16 @@ def to_decimal(value):
         return None
 
 
+class CsvRow:
+    """CSV row where every value is a stripped string ('' for missing columns)."""
+
+    def __init__(self, raw_row):
+        self._row = raw_row
+
+    def get(self, key):
+        return (self._row.get(key) or '').strip()
+
+
 def to_int(value, default=None):
     try:
         return max(0, int(str(value).strip()))
@@ -32,14 +42,15 @@ class Command(BaseCommand):
         try:
             f = open(options['path'], encoding='utf-8-sig', newline='')
         except OSError as exc:
-            raise CommandError(str(exc))
+            raise CommandError(str(exc)) from exc
         created = updated = skipped = 0
         with f:
             head = f.readline()
             f.seek(0)
             reader = csv.DictReader(f, delimiter=';' if ';' in head else ',')
-            for row in reader:
-                get = lambda key: (row.get(key) or '').strip()
+            for raw_row in reader:
+                row = CsvRow(raw_row)
+                get = row.get
                 article, name, cat_name = get('article'), get('name'), get('category')
                 if not (article and name and cat_name):
                     skipped += 1

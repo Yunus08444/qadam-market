@@ -82,7 +82,11 @@ class CatalogViewsTests(TestCase):
     def test_catalog_sorts_and_handles_invalid_sort_and_page(self):
         response = self.client.get(reverse('catalog'), {'sort': 'price_asc'})
         names = [product.name for product in response.context['page_obj']]
-        self.assertEqual(names, ['Перчатки', 'Рабочие ботинки', 'Рабочая куртка'])
+        self.assertEqual(names, ['Рабочие ботинки', 'Рабочая куртка', 'Перчатки'])
+
+        response = self.client.get(reverse('catalog'), {'sort': 'price_desc'})
+        names = [product.name for product in response.context['page_obj']]
+        self.assertEqual(names, ['Рабочая куртка', 'Рабочие ботинки', 'Перчатки'])
 
         fallback = self.client.get(
             reverse('catalog'),
@@ -211,3 +215,51 @@ class CatalogViewsTests(TestCase):
         response = self.client.get(reverse('catalog'), {'in_stock': '1'})
         self.assertEqual(response.context['page_obj'].paginator.count, 1)
         self.assertTrue(self.product.is_new)
+
+
+class ImportProductsCommandTests(TestCase):
+    def run_import(self, content):
+        import tempfile
+        from io import StringIO
+        from pathlib import Path
+
+        from django.core.management import call_command
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'products.csv'
+            path.write_text(content, encoding='utf-8')
+            out = StringIO()
+            call_command('import_products', str(path), stdout=out)
+        return out.getvalue()
+
+    def test_creates_categories_and_products_and_skips_invalid_rows(self):
+        output = self.run_import(
+            'category;name;article;price;wholesale_price;wholesale_min_qty;stock\n'
+            'Керзы;Сапоги;K-1;3 500;2800,50;10;5\n'
+            'Керзы;Без артикула;;100;;;\n'
+        )
+
+        product = Product.objects.get(article='K-1')
+        self.assertEqual(product.category.name, 'Керзы')
+        self.assertEqual(product.price, Decimal('3500'))
+        self.assertEqual(product.wholesale_price, Decimal('2800.50'))
+        self.assertEqual(product.wholesale_min_qty, 10)
+        self.assertEqual(product.stock, 5)
+        self.assertEqual(product.description, '')
+        self.assertIn('Добавлено: 1, обновлено: 0, пропущено: 1', output)
+
+    def test_updates_existing_product_by_article(self):
+        self.run_import('category,name,article,price\nОбувь,Старое имя,A-1,100\n')
+        output = self.run_import('category,name,article,price\nОбувь,Новое имя,A-1,abc\n')
+
+        product = Product.objects.get(article='A-1')
+        self.assertEqual(product.name, 'Новое имя')
+        self.assertIsNone(product.price)
+        self.assertEqual(Category.objects.count(), 1)
+        self.assertIn('обновлено: 1', output)
+
+    def test_missing_file_raises_command_error(self):
+        from django.core.management import CommandError, call_command
+
+        with self.assertRaises(CommandError):
+            call_command('import_products', 'does-not-exist.csv')

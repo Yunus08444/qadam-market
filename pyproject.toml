@@ -1,0 +1,24 @@
+[project]
+name = "qadam-market"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "DJ"]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.coverage.run]
+source = ["products", "qadam"]
+omit = ["*/migrations/*", "qadam/asgi.py", "qadam/wsgi.py"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

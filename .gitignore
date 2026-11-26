@@ -23,3 +23,7 @@ Thumbs.db
 # Local tooling
 CLAUDE.md
 .claude/
+
+# Coverage
+.coverage
+htmlcov/
