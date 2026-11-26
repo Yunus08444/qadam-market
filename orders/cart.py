@@ -34,6 +34,21 @@ def clear_cart(session):
     session.pop(SESSION_KEY, None)
 
 
+def count_items(session):
+    """Number of pieces in the order list, ignoring products that were removed or hidden."""
+    parsed = [(*parse_key(key), qty) for key, qty in get_cart(session).items()]
+    if not parsed:
+        return 0  # no query for visitors with an empty list
+    available = set(
+        Product.objects.filter(
+            pk__in={product_id for product_id, _, _ in parsed if product_id is not None},
+            is_active=True,
+            category__is_active=True,
+        ).values_list('pk', flat=True)
+    )
+    return sum(qty for product_id, _, qty in parsed if product_id in available)
+
+
 def price_items(lines):
     """Turn [(product, size, qty), ...] into priced order items and a total.
 

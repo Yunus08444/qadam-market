@@ -169,3 +169,16 @@ class ManualOrderAdminTests(OrderTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Выберите товар или впишите название')
         self.assertEqual(Order.objects.count(), 0)
+
+
+class OrderCounterTests(OrderTestCase):
+    def test_counter_ignores_removed_or_hidden_products(self):
+        self.add_to_cart(self.boots, 2)
+        self.add_to_cart(self.gloves, 3)
+        self.assertEqual(self.client.get(reverse('home')).context['order_count'], 5)
+
+        Product.objects.filter(pk=self.gloves.pk).update(is_active=False)
+        self.assertEqual(self.client.get(reverse('home')).context['order_count'], 2)
+
+        self.boots.delete()
+        self.assertEqual(self.client.get(reverse('home')).context['order_count'], 0)

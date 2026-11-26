@@ -2,7 +2,7 @@ import re
 
 from django.conf import settings
 
-from orders.cart import get_cart
+from orders.cart import count_items
 
 
 def seller_contacts(request):
@@ -12,7 +12,7 @@ def seller_contacts(request):
 
     return {
         'seller_phone': phone,
-        'order_count': sum(get_cart(getattr(request, 'session', {})).values()),
+        'order_count': count_items(getattr(request, 'session', {})),
         'seller_address': getattr(settings, 'SELLER_ADDRESS', ''),
         'seller_hours': getattr(settings, 'SELLER_HOURS', ''),
         'seller_instagram': getattr(settings, 'SELLER_INSTAGRAM', ''),
