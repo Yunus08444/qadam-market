@@ -17,6 +17,9 @@ Built for a real family business, still in active development.
 - Order workflow with statuses (new → confirmed → shipped → completed / cancelled) managed from the admin
 - Instant Telegram notification to the manager about every new order
 - Prices are copied into the order, so later price changes do not affect placed orders
+- Size selection (the same product in several sizes is several order lines; wholesale price counts all of them)
+- Delivery across Kyrgyzstan: region, district / town, street, second phone; or pickup at Dordoi bazaar
+- Deposit tracking and amount due; managers enter orders from the WhatsApp group in the admin with auto-filled prices
 - CSV import of products via a management command (creates categories, updates existing items by article)
 - Admin panel with inline photo upload and inline editing of prices and stock
 - SEO basics: `sitemap.xml`, `robots.txt`, custom 404/500 pages
