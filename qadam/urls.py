@@ -2,18 +2,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
-from django.urls import path
+from django.urls import include, path
 from django.views.generic import TemplateView
 
 from products.sitemaps import ProductSitemap, StaticSitemap
-from products.views import (
-    catalog,
-    home,
-    order_add,
-    order_list,
-    order_set,
-    product_detail,
-)
+from products.views import catalog, home, product_detail
 
 SITEMAPS = {'static': StaticSitemap, 'products': ProductSitemap}
 
@@ -22,9 +15,7 @@ urlpatterns = [
     path('', home, name='home'),
     path('catalog/', catalog, name='catalog'),
     path('products/<int:pk>/', product_detail, name='product_detail'),
-    path('order/', order_list, name='order_list'),
-    path('order/add/<int:pk>/', order_add, name='order_add'),
-    path('order/set/<int:pk>/', order_set, name='order_set'),
+    path('order/', include('orders.urls')),
     path('about/', TemplateView.as_view(template_name='about.html'), name='about'),
     path('wholesale/', TemplateView.as_view(template_name='wholesale.html'), name='wholesale'),
     path('delivery/', TemplateView.as_view(template_name='delivery.html'), name='delivery'),
