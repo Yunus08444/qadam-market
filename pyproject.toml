@@ -15,7 +15,7 @@ select = ["E", "F", "W", "I", "B", "UP", "DJ"]
 quote-style = "single"
 
 [tool.coverage.run]
-source = ["products", "qadam"]
+source = ["products", "orders", "api", "qadam"]
 omit = ["*/migrations/*", "qadam/asgi.py", "qadam/wsgi.py"]
 branch = true
 
