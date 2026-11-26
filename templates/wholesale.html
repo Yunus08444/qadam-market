@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Оптовикам — Qadam Market{% endblock %}
+{% block meta_description %}Как заказать товары оптом в Qadam Market: список заказа, оптовые цены, подтверждение в WhatsApp.{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <div class="container">
+        <h1>Оптовикам</h1>
+        <p>Оптовые цены указаны у каждого товара.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container prose">
+        <ol>
+            <li>Выберите товары в каталоге и добавьте их в список заказа.</li>
+            <li>Отправьте список нам в WhatsApp одной кнопкой.</li>
+            <li>Мы подтвердим наличие, цену и условия доставки.</li>
+        </ol>
+        <p>Оптовая цена и минимальное количество («от N шт.») указаны на странице товара. Если у товара задано минимальное количество, в списке заказа цена пересчитывается автоматически, а итоговую сумму подтверждает продавец.</p>
+        <p><a class="button button-primary" href="{% url 'order_list' %}">Список заказа</a> <a class="button button-secondary" href="{% url 'catalog' %}">Каталог</a></p>
+
+    </div>
+</section>
+{% endblock %}

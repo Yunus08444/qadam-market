@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} — Qadam Market{% endblock %}
+{% block meta_description %}{{ product.name }}{% if product.article %}, артикул {{ product.article }}{% endif %}. Товар из каталога Qadam Market.{% endblock %}
+
+{% block content %}
+<section class="section detail-section">
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="Навигационная цепочка">
+            <a href="{% url 'home' %}">Главная</a><span aria-hidden="true">/</span>
+            <a href="{% url 'catalog' %}">Каталог</a><span aria-hidden="true">/</span>
+            <span>{{ product.name }}</span>
+        </nav>
+        <div class="product-detail">
+            <div class="detail-image">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <span class="image-placeholder image-placeholder-large" aria-hidden="true"><span>Q</span></span>
+                {% endif %}
+                {% for extra in product.extra_images.all %}
+                    {% if forloop.first %}<div class="detail-thumbs">{% endif %}
+                    <img src="{{ extra.image.url }}" alt="{{ product.name }}" loading="lazy">
+                    {% if forloop.last %}</div>{% endif %}
+                {% endfor %}
+            </div>
+            <div class="detail-content">
+                <a class="detail-category" href="{% url 'catalog' %}?category={{ product.category.slug|urlencode }}">{{ product.category.name }}</a>
+                <h1>{{ product.name }}</h1>
+                <p class="detail-article">Артикул: {{ product.article }}</p>
+
+                <div class="detail-prices">
+                    {% if product.price != None %}
+                        <div><span>Розничная цена</span><strong>{{ product.price|floatformat:"-2" }} сом</strong></div>
+                    {% else %}
+                        <div><span>Розничная цена</span><strong class="price-unset">Уточняйте у продавца</strong></div>
+                    {% endif %}
+                    {% if product.wholesale_price != None %}
+                        <div><span>Оптовая цена</span><strong>{{ product.wholesale_price|floatformat:"-2" }} сом</strong>{% if product.wholesale_min_qty %}<small>от {{ product.wholesale_min_qty }} шт.</small>{% endif %}</div>
+                    {% endif %}
+                </div>
+
+                <div class="detail-stock {% if product.stock %}stock-available{% else %}stock-unavailable{% endif %}">
+                    {% if product.stock %}В наличии: {{ product.stock }} шт.{% else %}Нет в наличии{% endif %}
+                </div>
+
+                <dl class="detail-specs">
+                    {% if product.sizes %}<div><dt>Размеры</dt><dd>{{ product.sizes }}</dd></div>{% endif %}
+                    {% if product.color %}<div><dt>Цвет</dt><dd>{{ product.color }}</dd></div>{% endif %}
+                </dl>
+
+                {% if product.description %}
+                    <div class="detail-description">
+                        <h2>Описание</h2>
+                        <p>{{ product.description|linebreaksbr }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="detail-contact">
+                    <form class="order-form" method="post" action="{% url 'order_add' product.pk %}">
+                        {% csrf_token %}
+                        <input type="number" name="qty" value="1" min="1" max="9999" aria-label="Количество">
+                        <button class="button button-primary" type="submit">В список заказа</button>
+                    </form>
+                    {% if product.video_url %}
+                        <a class="button button-secondary" href="{{ product.video_url }}" target="_blank" rel="noopener noreferrer">Смотреть видео</a>
+                    {% endif %}
+                    {% if seller_whatsapp_url %}
+                        <a class="button button-primary" href="{{ seller_whatsapp_url }}?text={{ wa_text|urlencode }}" target="_blank" rel="noopener noreferrer">Связаться в WhatsApp <span aria-hidden="true">→</span></a>
+                    {% endif %}
+                    {% if seller_phone_url %}
+                        <a class="button button-secondary" href="tel:{{ seller_phone_url }}">Позвонить: {{ seller_phone }}</a>
+                    {% endif %}
+                    {% if not seller_phone_url and not seller_whatsapp_url %}
+                        <p>Контакт продавца пока не настроен. Наличие и цену уточняйте позднее.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

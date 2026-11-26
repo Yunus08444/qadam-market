@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка сервера — Qadam Market{% endblock %}
+
+{% block content %}
+<section class="section error-page">
+    <div class="container">
+        <span class="error-code">500</span>
+        <h1>Не удалось открыть страницу</h1>
+        <p>Попробуйте ещё раз немного позже.</p>
+        <a class="button button-primary" href="{% url 'home' %}">На главную</a>
+    </div>
+</section>
+{% endblock %}

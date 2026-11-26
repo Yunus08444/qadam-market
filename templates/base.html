@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{% block meta_description %}Каталог Qadam Market: спецодежда, обувь и товары для оптовых и розничных покупателей в Кыргызстане.{% endblock %}">
+    <title>{% block title %}Qadam Market — каталог товаров{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="brand" href="{% url 'home' %}" aria-label="Qadam Market — главная">
+                <span class="brand-mark">Q</span>
+                <span>Qadam <strong>Market</strong></span>
+            </a>
+            <nav class="main-nav" aria-label="Основная навигация">
+                <a href="{% url 'home' %}">Главная</a>
+                <a href="{% url 'catalog' %}">Каталог</a>
+                <a href="{% url 'home' %}#categories">Категории</a>
+                <a href="{% url 'wholesale' %}">Оптовикам</a>
+                <a href="{% url 'delivery' %}">Доставка</a>
+                <a href="{% url 'about' %}">О нас</a>
+                <a href="{% url 'home' %}#contacts">Контакты</a>
+                <a class="nav-order" href="{% url 'order_list' %}">Список заказа{% if order_count %} ({{ order_count }}){% endif %}</a>
+            </nav>
+            <form class="header-search" action="{% url 'catalog' %}" method="get" role="search">
+                <label class="visually-hidden" for="header-search">Поиск по товарам и артикулам</label>
+                <input id="header-search" type="search" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Найти товар или артикул">
+                <button type="submit" aria-label="Искать">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer" id="contacts">
+        <div class="container footer-grid">
+            <div class="footer-about">
+                <a class="brand brand-light" href="{% url 'home' %}">
+                    <span class="brand-mark">Q</span>
+                    <span>Qadam <strong>Market</strong></span>
+                </a>
+                <p>Каталог товаров для оптовых и розничных покупателей.</p>
+                <span class="footer-location">Кыргызстан · рынок Дордой</span>
+            </div>
+            <div class="footer-links">
+                <h2>Навигация</h2>
+                <a href="{% url 'catalog' %}">Каталог товаров</a>
+                <a href="{% url 'wholesale' %}">Оптовикам</a>
+                <a href="{% url 'delivery' %}">Доставка и вопросы</a>
+                <a href="{% url 'about' %}">О нас</a>
+                <a href="{% url 'home' %}#categories">Категории</a>
+            </div>
+            <div class="footer-contact">
+                <h2>Связаться с продавцом</h2>
+                {% if seller_address %}<p class="footer-address">{{ seller_address }}</p>{% endif %}
+                {% if seller_hours %}<p class="footer-address">Время работы: {{ seller_hours }}</p>{% endif %}
+                {% if seller_instagram %}<a href="{{ seller_instagram }}" target="_blank" rel="noopener noreferrer">Instagram: @qadam.market</a>{% endif %}
+                {% if seller_phone_url %}
+                    <a href="tel:{{ seller_phone_url }}">{{ seller_phone }}</a>
+                {% endif %}
+                {% if seller_whatsapp_url %}
+                    <a class="footer-whatsapp" href="{{ seller_whatsapp_url }}" target="_blank" rel="noopener noreferrer">Написать в WhatsApp</a>
+                {% endif %}
+                {% if not seller_phone_url and not seller_whatsapp_url %}
+                    <p>Контактный номер пока не указан.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="container footer-bottom">
+            <span>© {% now "Y" %} Qadam Market</span>
+            <span>Цены указаны в сомах и могут меняться.</span>
+        </div>
+    </footer>
+</body>
+</html>

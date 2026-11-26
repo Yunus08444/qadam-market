@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Доставка и вопросы — Qadam Market{% endblock %}
+{% block meta_description %}Доставка, оплата и ответы на частые вопросы Qadam Market.{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <div class="container">
+        <h1>Доставка и вопросы</h1>
+        <p>Ответы на частые вопросы покупателей.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container prose">
+        <div class="faq">
+            <details><summary>Можно ли купить товар в розницу?</summary><p>Да, мы продаём и оптом, и в розницу. Обе цены указаны у каждого товара.</p></details>
+            <details><summary>Как узнать, есть ли товар в наличии?</summary><p>Наличие указано на странице товара. Перед отправкой мы подтверждаем его в WhatsApp.</p></details>
+            <details><summary>Вы доставляете в регионы?</summary><p>Да. Сроки и стоимость зависят от города и объёма заказа, уточняйте в WhatsApp.</p></details>
+            <details><summary>Как оплатить заказ?</summary><p>Способ оплаты мы согласуем при подтверждении заказа.</p></details>
+            <details><summary>Где вас найти?</summary><p>{{ seller_address }}.</p></details>
+        </div>
+        <p>
+            <a class="button button-primary" href="{% url 'catalog' %}">Смотреть каталог</a>
+            {% if seller_whatsapp_url %}<a class="button button-secondary" href="{{ seller_whatsapp_url }}" target="_blank" rel="noopener noreferrer">Написать в WhatsApp</a>{% endif %}
+        </p>
+    </div>
+</section>
+{% endblock %}

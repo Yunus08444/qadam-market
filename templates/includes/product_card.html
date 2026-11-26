@@ -1,0 +1,35 @@
+<article class="product-card">
+    <a class="product-card-image" href="{% url 'product_detail' product.pk %}" aria-label="Подробнее: {{ product.name }}">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+        {% else %}
+            <span class="image-placeholder" aria-hidden="true"><span>Q</span></span>
+        {% endif %}
+        {% if product.is_featured %}<span class="product-badge">Популярное</span>{% elif product.is_new %}<span class="product-badge">Новинка</span>{% endif %}
+    </a>
+    <div class="product-card-body">
+        <span class="product-card-category">{{ product.category.name }}</span>
+        <h3><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h3>
+        <p class="product-card-article">Артикул: {{ product.article }}</p>
+        {% if product.sizes %}<p class="product-card-detail">Размеры: {{ product.sizes }}</p>{% endif %}
+        <div class="product-card-bottom">
+            <div class="product-card-prices">
+                {% if product.price != None %}
+                    <strong>{{ product.price|floatformat:"-2" }} сом</strong>
+                {% else %}
+                    <strong class="price-unset">Цена уточняется</strong>
+                {% endif %}
+                {% if product.wholesale_price != None %}
+                    <span>Опт: {{ product.wholesale_price|floatformat:"-2" }} сом{% if product.wholesale_min_qty %} (от {{ product.wholesale_min_qty }} шт.){% endif %}</span>
+                {% endif %}
+            </div>
+            <span class="stock-indicator {% if product.stock %}stock-available{% else %}stock-unavailable{% endif %}">
+                {% if product.stock %}В наличии{% else %}Нет в наличии{% endif %}
+            </span>
+        </div>
+        <form class="card-order" method="post" action="{% url 'order_add' product.pk %}">
+            {% csrf_token %}
+            <button class="button button-secondary" type="submit">В список заказа</button>
+        </form>
+    </div>
+</article>

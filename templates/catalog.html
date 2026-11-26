@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог товаров — Qadam Market{% endblock %}
+{% block meta_description %}Каталог товаров Qadam Market. Поиск по названию и артикулу, фильтр по категориям и сортировка.{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="Навигационная цепочка">
+            <a href="{% url 'home' %}">Главная</a><span aria-hidden="true">/</span><span>Каталог</span>
+        </nav>
+        <span class="eyebrow eyebrow-muted">Ассортимент Qadam Market</span>
+        <h1>Каталог товаров</h1>
+        <p>Найдите товар по названию, артикулу или категории.</p>
+    </div>
+</section>
+
+<section class="section catalog-section">
+    <div class="container">
+        <form class="catalog-filters" action="{% url 'catalog' %}" method="get">
+            <label class="filter-search">
+                <span>Поиск</span>
+                <input type="search" name="q" value="{{ query }}" maxlength="100" placeholder="Название или артикул">
+            </label>
+            <label>
+                <span>Категория</span>
+                <select name="category">
+                    <option value="">Все категории</option>
+                    {% for category in categories %}
+                        <option value="{{ category.slug }}" {% if selected_category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                <span>Сортировка</span>
+                <select name="sort">
+                    <option value="newest" {% if sort == "newest" %}selected{% endif %}>Сначала новые</option>
+                    <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>Сначала старые</option>
+                    <option value="price_asc" {% if sort == "price_asc" %}selected{% endif %}>Сначала дешевле</option>
+                    <option value="price_desc" {% if sort == "price_desc" %}selected{% endif %}>Сначала дороже</option>
+                    <option value="name" {% if sort == "name" %}selected{% endif %}>По названию</option>
+                </select>
+            </label>
+            <label class="filter-check"><input type="checkbox" name="in_stock" value="1" {% if in_stock %}checked{% endif %}> <span>Только в наличии</span></label>
+            <button class="button button-primary filter-submit" type="submit">Показать товары</button>
+        </form>
+
+        <div class="catalog-result-line">
+            <p>
+                {% if query %}Результаты поиска «{{ query }}»{% else %}Все товары{% endif %}
+            </p>
+            <span>Товаров: {{ page_obj.paginator.count }}</span>
+        </div>
+
+        <div class="products-grid">
+            {% for product in page_obj %}
+                {% include "includes/product_card.html" with product=product %}
+            {% empty %}
+                <div class="empty-state empty-state-wide">
+                    <span class="empty-state-mark" aria-hidden="true">Q</span>
+                    <h2>Ничего не найдено</h2>
+                    <p>Измените поисковый запрос или выберите другую категорию.</p>
+                    <a class="button button-secondary" href="{% url 'catalog' %}">Сбросить фильтры</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <nav class="pagination" aria-label="Страницы каталога">
+                {% if page_obj.has_previous %}
+                    <a href="?q={{ query|urlencode }}&amp;category={{ selected_category|urlencode }}&amp;sort={{ sort }}{% if in_stock %}&amp;in_stock=1{% endif %}&amp;page={{ page_obj.previous_page_number }}" aria-label="Предыдущая страница">←</a>
+                {% endif %}
+                <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?q={{ query|urlencode }}&amp;category={{ selected_category|urlencode }}&amp;sort={{ sort }}{% if in_stock %}&amp;in_stock=1{% endif %}&amp;page={{ page_obj.next_page_number }}" aria-label="Следующая страница">→</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

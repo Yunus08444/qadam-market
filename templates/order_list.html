@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Список заказа — Qadam Market{% endblock %}
+
+{% block content %}
+<section class="page-intro">
+    <div class="container">
+        <h1>Список заказа</h1>
+        <p>Соберите товары и отправьте список нам в WhatsApp. Мы подтвердим наличие, цену и доставку.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {% if items %}
+            <div class="order-wrap">
+                <table class="order-table">
+                    <thead><tr><th>Товар</th><th>Цена за шт.</th><th>Количество</th><th>Сумма</th><th></th></tr></thead>
+                    <tbody>
+                    {% for it in items %}
+                        <tr>
+                            <td><a href="{% url 'product_detail' it.product.pk %}">{{ it.product.name }}</a><br><small>Артикул: {{ it.product.article }}</small></td>
+                            <td>{% if it.unit != None %}{{ it.unit|floatformat:"-2" }} сом{% else %}Уточняйте{% endif %}</td>
+                            <td>
+                                <form class="order-form" method="post" action="{% url 'order_set' it.product.pk %}">
+                                    {% csrf_token %}
+                                    <input type="number" name="qty" value="{{ it.qty }}" min="0" max="9999" aria-label="Количество">
+                                    <button class="button button-secondary" type="submit">Обновить</button>
+                                </form>
+                            </td>
+                            <td>{% if it.line != None %}{{ it.line|floatformat:"-2" }} сом{% endif %}</td>
+                            <td>
+                                <form method="post" action="{% url 'order_set' it.product.pk %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="qty" value="0">
+                                    <button class="button button-secondary" type="submit">Убрать</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if total %}
+                <p class="order-total">Ориентировочная сумма: <strong>{{ total|floatformat:"-2" }} сом</strong><br><small>Оптовая цена применяется от минимального количества, указанного у товара. Итоговую цену подтверждает продавец.</small></p>
+            {% endif %}
+            {% if seller_whatsapp_url %}
+                <a class="button button-primary" href="{{ seller_whatsapp_url }}?text={{ wa_text|urlencode }}" target="_blank" rel="noopener noreferrer">Отправить заказ в WhatsApp</a>
+            {% else %}
+                <p>Контакт продавца пока не настроен.</p>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <h2>Список заказа пуст</h2>
+                <p>Добавьте товары из каталога.</p>
+                <a class="button button-primary" href="{% url 'catalog' %}">Перейти в каталог</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
