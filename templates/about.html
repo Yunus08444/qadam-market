@@ -14,9 +14,9 @@
 <section class="section">
     <div class="container prose">
         <p>Мы продаём рабочую обувь и спецодежду: берцы, сапоги, керзовые сапоги, галоши, ботинки и другие товары для работы. Товары привозим от поставщиков из России и Узбекистана и продаём как оптовым, так и розничным покупателям.</p>
-        <p>У нас есть постоянные оптовые клиенты. Новые товары мы показываем на видео в <a class="text-link" href="{{ seller_instagram }}" target="_blank" rel="noopener noreferrer">Instagram</a>, а на сайте у каждого товара указаны розничная и оптовая цены.</p>
+        <p>У нас есть постоянные оптовые клиенты. Новые товары мы показываем на видео{% if seller_instagram %} в <a class="text-link" href="{{ seller_instagram }}" target="_blank" rel="noopener noreferrer">Instagram</a>{% endif %}, а на сайте у каждого товара указаны розничная и оптовая цены.</p>
         <h2>Как нас найти</h2>
-        <p>{{ seller_address }}.{% if seller_hours %} Время работы: {{ seller_hours }}.{% endif %}</p>
+        <p>{% if seller_address %}{{ seller_address }}.{% endif %}{% if seller_hours %} Время работы: {{ seller_hours }}.{% endif %}</p>
         <p><a class="text-link" href="https://www.google.com/maps/search/?api=1&amp;query=Dordoi+Market+Bishkek" target="_blank" rel="noopener noreferrer">Открыть рынок Дордой на карте</a></p>
         <p>
             <a class="button button-primary" href="{% url 'catalog' %}">Смотреть каталог</a>
