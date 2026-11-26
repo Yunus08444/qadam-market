@@ -82,7 +82,11 @@ class CatalogViewsTests(TestCase):
     def test_catalog_sorts_and_handles_invalid_sort_and_page(self):
         response = self.client.get(reverse('catalog'), {'sort': 'price_asc'})
         names = [product.name for product in response.context['page_obj']]
-        self.assertEqual(names, ['Перчатки', 'Рабочие ботинки', 'Рабочая куртка'])
+        self.assertEqual(names, ['Рабочие ботинки', 'Рабочая куртка', 'Перчатки'])
+
+        response = self.client.get(reverse('catalog'), {'sort': 'price_desc'})
+        names = [product.name for product in response.context['page_obj']]
+        self.assertEqual(names, ['Рабочая куртка', 'Рабочие ботинки', 'Перчатки'])
 
         fallback = self.client.get(
             reverse('catalog'),

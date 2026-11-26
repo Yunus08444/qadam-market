@@ -1,6 +1,6 @@
 
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
@@ -59,8 +59,10 @@ def catalog(request):
     ordering = {
         'newest': ('-created_at', '-pk'),
         'oldest': ('created_at', 'pk'),
-        'price_asc': ('price', '-created_at', '-pk'),
-        'price_desc': ('-price', '-created_at', '-pk'),
+        # Products without a price go last on every database
+        # (SQLite and PostgreSQL put NULL on different sides by default).
+        'price_asc': (F('price').asc(nulls_last=True), '-created_at', '-pk'),
+        'price_desc': (F('price').desc(nulls_last=True), '-created_at', '-pk'),
         'name': ('name', 'pk'),
     }
     if sort not in ordering:
