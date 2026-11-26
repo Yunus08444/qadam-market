@@ -9,22 +9,26 @@ class EmptyCartError(Exception):
 
 
 @transaction.atomic
-def create_order(*, customer_name, phone, comment, items):
+def create_order(*, items, **customer):
     """Save the order with its items in one transaction.
 
-    `items` is the list returned by `cart.get_items`. Prices are copied into
-    the order so later price changes don't affect already placed orders.
+    `items` is the list returned by `cart.get_items`, `customer` holds the
+    checkout form fields (name, phones, address, comment). Prices are copied
+    into the order so later price changes don't affect already placed orders.
     """
     if not items:
         raise EmptyCartError
 
-    order = Order.objects.create(customer_name=customer_name, phone=phone, comment=comment)
+    order = Order.objects.create(source=Order.Source.SITE, **customer)
     order_items = [
         OrderItem(
             order=order,
             product=item['product'],
             product_name=item['product'].name,
             article=item['product'].article,
+            size=item['size'],
+            # The cart already applied the wholesale price for the total quantity
+            # of the product across sizes, so keep its price as is
             unit_price=item['unit'],
             quantity=item['qty'],
             line_total=item['line'],

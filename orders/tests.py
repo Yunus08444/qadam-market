@@ -12,7 +12,12 @@ from products.models import Category, Product
 from .models import Order, OrderItem
 from .notifications import format_order_message, send_telegram_message
 
-VALID_CUSTOMER = {'customer_name': 'Азамат', 'phone': '+996 555 12 34 56', 'comment': ''}
+VALID_CUSTOMER = {
+    'customer_name': 'Азамат',
+    'phone': '+996 555 12 34 56',
+    'region': 'pickup',
+    'comment': '',
+}
 
 
 class OrderTestCase(TestCase):
